@@ -72,16 +72,58 @@
  *   isLassiStand({});                       // => false
  */
 export function LassiStand(name, city) {
-  // Your code here
+    // Your code here
+    this.name = name;
+    this.city = city;
+    this.menu = [];
+    this.orders = [];
+    this._nextOrderId = 1;
 }
 
-// Add prototype methods here:
-// LassiStand.prototype.addFlavor = function(flavor, price) { ... }
-// LassiStand.prototype.takeOrder = function(customerName, flavor, quantity) { ... }
-// LassiStand.prototype.completeOrder = function(orderId) { ... }
-// LassiStand.prototype.getRevenue = function() { ... }
-// LassiStand.prototype.getMenu = function() { ... }
+LassiStand.prototype.addFlavor = function (flavor, price) {
+    const flavorExists = this.menu.find((lassi) => lassi.flavor === flavor);
+    if (flavorExists || price <= 0) return -1;
+    this.menu.push({ flavor, price });
+    return this.menu.length;
+};
+
+LassiStand.prototype.takeOrder = function (customerName, flavor, quantity) {
+    const flavorExists = this.menu.find((lassi) => lassi.flavor === flavor);
+    if (!flavorExists || quantity <= 0) return -1;
+
+    this.orders.push({
+        id: this._nextOrderId,
+        cusomer: customerName,
+        flavor,
+        quantity,
+        total: quantity * flavorExists.price,
+        status: "pending",
+    });
+    this._nextOrderId++;
+    return this._nextOrderId - 1;
+};
+
+LassiStand.prototype.completeOrder = function (orderId) {
+    const order = this.orders.find((lassi) => lassi.id === orderId);
+    if (!order) return false;
+    if (order.status === "completed") return false;
+
+    order.status = "completed";
+    return true;
+};
+
+LassiStand.prototype.getRevenue = function () {
+    return this.orders
+        .filter((order) => order.status === "completed")
+        .reduce((sum, order) => sum + order.total, 0);
+};
+
+LassiStand.prototype.getMenu = function () {
+    return [...this.menu];
+};
 
 export function isLassiStand(obj) {
-  // Your code here
+    // Your code here
+    if (obj instanceof LassiStand) return true;
+    return false;
 }

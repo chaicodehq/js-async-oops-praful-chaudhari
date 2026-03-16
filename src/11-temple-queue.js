@@ -119,59 +119,141 @@
  *   }
  */
 export class TempleQueue {
-  #devotees;
-  #maxCapacity;
-  #vipEnabled;
+    #devotees;
+    #maxCapacity;
+    #vipEnabled;
 
-  constructor(templeName, maxCapacity) {
-    // Your code here
-  }
+    constructor(templeName, maxCapacity) {
+        // Your code here
 
-  get length() {
-    // Your code here
-  }
+        this.templeName = templeName;
+        this.#devotees = [];
+        this.#maxCapacity = maxCapacity > 0 ? maxCapacity : 100;
+        this.#vipEnabled = false;
+    }
 
-  get isEmpty() {
-    // Your code here
-  }
+    get length() {
+        // Your code here
+        return this.#devotees.length;
+    }
 
-  get vipEnabled() {
-    // Your code here
-  }
+    get isEmpty() {
+        // Your code here
+        return this.#devotees.length === 0;
+    }
 
-  set vipEnabled(value) {
-    // Your code here
-  }
+    get vipEnabled() {
+        // Your code here
+        return this.#vipEnabled;
+    }
 
-  enqueue(name, type) {
-    // Your code here
-  }
+    set vipEnabled(value) {
+        // Your code here
+        if (typeof value !== "boolean") {
+            throw new TypeError("VIP status must be a boolean");
+        }
+        this.#vipEnabled = value;
+    }
 
-  dequeue() {
-    // Your code here
-  }
+    enqueue(name, type) {
+        // Your code here
 
-  peek() {
-    // Your code here
-  }
+        if (!["regular", "vip"].includes(type)) return null;
+        if (typeof name !== "string" || !name) return null;
 
-  contains(name) {
-    // Your code here
-  }
+        if (this.#devotees.length >= this.#maxCapacity) return null;
 
-  toArray() {
-    // Your code here
-  }
+        const devotee = {
+            name,
+            type,
+            joinedAt: new Date().toISOString(),
+        };
 
-  static merge(queue1, queue2) {
-    // Your code here
-  }
+        if (type === "vip" && this.#vipEnabled) {
+            this.#devotees.unshift(devotee);
+        } else {
+            this.#devotees.push(devotee);
+        }
 
-  static fromArray(templeName, maxCapacity, arr) {
-    // Your code here
-  }
+        return devotee;
+    }
 
-  [Symbol.iterator]() {
-    // Your code here
-  }
+    dequeue() {
+        // Your code here
+
+        if (this.#devotees.length === 0) return null;
+
+        return this.#devotees.shift();
+    }
+
+    peek() {
+        // Your code here
+
+        if (this.#devotees.length === 0) return null;
+
+        return this.#devotees[0];
+    }
+
+    contains(name) {
+        // Your code here
+        const devotee = this.#devotees.findIndex(
+            (devot) => devot.name === name,
+        );
+        if (devotee === -1) return false;
+
+        return true;
+    }
+
+    toArray() {
+        // Your code here
+        return [...this.#devotees];
+    }
+
+    static merge(queue1, queue2) {
+        // Your code here
+
+        const newName = `${queue1.templeName}-${queue2.templeName}`;
+        const newMaxCapacity = queue1.length + queue2.length + 5;
+
+        const newTemple = new TempleQueue(newName, newMaxCapacity);
+
+        for (const devot of queue1.toArray()) {
+            newTemple.enqueue(devot.name, devot.type);
+        }
+        for (const devot of queue2.toArray()) {
+            newTemple.enqueue(devot.name, devot.type);
+        }
+        return newTemple;
+    }
+
+    static fromArray(templeName, maxCapacity, arr) {
+        // Your code here
+
+        const newTemple = new TempleQueue(templeName, maxCapacity);
+
+        if (Array.isArray(arr)) {
+            for (const name of arr) {
+                newTemple.enqueue(name, "regular");
+            }
+        }
+
+        return newTemple;
+    }
+
+    [Symbol.iterator]() {
+        // Your code here
+
+        let index = 0;
+        const devots = this.#devotees;
+
+        return {
+            next() {
+                if (index < devots.length) {
+                    return { value: devots[index++], done: false };
+                } else {
+                    return { value: undefined, done: true };
+                }
+            },
+        };
+    }
 }

@@ -73,17 +73,68 @@
  *   // ]
  */
 export function orderChai(type, quantity) {
-  // Your code here
+    // Your code here
+
+    const validTypes = ["cutting", "special", "ginger", "masala"];
+    const prices = { cutting: 10, special: 20, ginger: 15, masala: 25 };
+
+    return new Promise((resolve, reject) => {
+        if (!validTypes.includes(type)) {
+            reject(new Error("Yeh chai available nahi hai!"));
+        }
+
+        if (typeof quantity !== "number" || quantity <= 0) {
+            reject(new Error("Kitni chai chahiye bhai?"));
+        }
+
+        setTimeout(() => {
+            resolve({ type, quantity, total: prices[type] * quantity });
+        }, 100);
+    });
 }
 
 export function checkIngredients(ingredient) {
-  // Your code here
+    // Your code here
+
+    const validIngredients = ["tea", "milk", "sugar", "ginger", "cardamom"];
+
+    return new Promise((resolve, reject) => {
+        if (validIngredients.includes(ingredient)) {
+            resolve({ ingredient, available: true });
+        }
+
+        reject(new Error(`${ingredient} khatam ho gaya!`));
+    });
 }
 
 export function prepareChaiWithTimeout(type, timeoutMs) {
-  // Your code here
+    // Your code here
+
+    return Promise.race([
+        orderChai(type, 1),
+        new Promise((_, reject) => {
+            setTimeout(() => {
+                reject(new Error("Bahut der ho gayi, chai nahi bani!"));
+            }, timeoutMs);
+        }),
+    ]);
 }
 
 export function processChaiQueue(orders) {
-  // Your code here
+    // Your code here
+
+    return new Promise(async (resolve, reject) => {
+        if (orders.length === 0) resolve([]);
+
+        const orderArr = [];
+        for (const order of orders) {
+            try {
+                const res = await orderChai(order.type, order.quantity);
+                orderArr.push({ status: "fulfilled", value: res });
+            } catch (error) {
+                orderArr.push({ status: "rejected", reason: error.message });
+            }
+        }
+        resolve(orderArr);
+    });
 }
